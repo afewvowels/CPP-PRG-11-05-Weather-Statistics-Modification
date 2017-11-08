@@ -13,6 +13,8 @@
 #include <iostream>
 #include <iomanip>
 
+using namespace std;
+
 struct StructMonthWeather
 {
     double dblRainfallTotal;
@@ -26,21 +28,22 @@ struct StructWeatherResults
     double dblAverageMonthlyRainfall;
     double dblTotalRainfallAnnual;
     double dblTempHighest;
-    int intMonthHigh;
+    string strMonthHigh;
     double dblTempLowest;
-    int intMonthLow;
+    string strMonthLow;
     double dblAverageMonthlyTemp;
 };
 
-using namespace std;
+enum EnmMonth { JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER };
 
 StructMonthWeather *getMonthsData(int);
-StructWeatherResults *calculateResults(StructMonthWeather *, const int);
-void displayResults(StructWeatherResults *, const int);
+string *convertEnumToString(int);
+StructWeatherResults *calculateResults(StructMonthWeather *, int);
+void displayResults(StructWeatherResults *);
 
 int main()
 {
-    const int INT_ARR_SIZE = 12;
+    int INT_ARR_SIZE = 12;
     
     StructMonthWeather *stcWeather = nullptr;
     stcWeather = new StructMonthWeather[INT_ARR_SIZE];
@@ -48,14 +51,14 @@ int main()
     StructWeatherResults *stcWeatherResults = nullptr;
     stcWeatherResults = new StructWeatherResults;
     
-    for (int i = 0 ; i < INT_ARR_SIZE ; i++)
+    for (int month = JANUARY ; month <= DECEMBER ; month++)
     {
-        stcWeather[i] = *getMonthsData(i);
+        stcWeather[month] = *getMonthsData(month);
     }
     
     stcWeatherResults = calculateResults(stcWeather, INT_ARR_SIZE);
     
-    displayResults(stcWeatherResults, INT_ARR_SIZE);
+    displayResults(stcWeatherResults);
     
     return 0;
 }
@@ -65,9 +68,9 @@ StructMonthWeather *getMonthsData(int intMonth)
     StructMonthWeather *stcWeatherMonth = nullptr;
     stcWeatherMonth = new StructMonthWeather;
     
-    intMonth++;
+//    intMonth++;
     
-    cout << "Please enter the total rainfall for month " << intMonth << ": ";
+    cout << "Please enter the total rainfall for month " << *convertEnumToString(intMonth) << ": ";
     cin >> stcWeatherMonth->dblRainfallTotal;
     while(!cin || stcWeatherMonth->dblRainfallTotal < 0 || stcWeatherMonth->dblRainfallTotal > 1000)
     {
@@ -77,7 +80,7 @@ StructMonthWeather *getMonthsData(int intMonth)
         cin >> stcWeatherMonth->dblRainfallTotal;
     }
     
-    cout << "Please enter the highest temperature for month " << intMonth << ": ";
+    cout << "Please enter the highest temperature for month " << *convertEnumToString(intMonth) << ": ";
     cin >> stcWeatherMonth->dblTempHigh;
     while(!cin || stcWeatherMonth->dblTempHigh < -100 || stcWeatherMonth->dblTempHigh > 140)
     {
@@ -87,7 +90,7 @@ StructMonthWeather *getMonthsData(int intMonth)
         cin >> stcWeatherMonth->dblTempHigh;
     }
     
-    cout << "Please enter the lowest temperature for month " << intMonth << ": ";
+    cout << "Please enter the lowest temperature for month " << *convertEnumToString(intMonth) << ": ";
     cin >> stcWeatherMonth->dblTempLow;
     while(!cin || stcWeatherMonth->dblTempLow < -100 || stcWeatherMonth->dblTempLow > 140)
     {
@@ -102,10 +105,64 @@ StructMonthWeather *getMonthsData(int intMonth)
     return stcWeatherMonth;
 }
 
-StructWeatherResults *calculateResults(StructMonthWeather *stcArr, const int INT_SIZE)
+string *convertEnumToString(int intMonth)
+{
+    string *strMonth = nullptr;
+    strMonth = new string;
+    
+    switch(intMonth)
+    {
+        case JANUARY:
+            *strMonth = "January";
+            break;
+        case FEBRUARY:
+            *strMonth = "February";
+            break;
+        case MARCH:
+            *strMonth = "March";
+            break;
+        case APRIL:
+            *strMonth = "April";
+            break;
+        case MAY:
+            *strMonth = "May";
+            break;
+        case JUNE:
+            *strMonth = "June";
+            break;
+        case JULY:
+            *strMonth = "July";
+            break;
+        case AUGUST:
+            *strMonth = "August";
+            break;
+        case SEPTEMBER:
+            *strMonth = "September";
+            break;
+        case OCTOBER:
+            *strMonth = "October";
+            break;
+        case NOVEMBER:
+            *strMonth = "November";
+            break;
+        case DECEMBER:
+            *strMonth = "December";
+            break;
+        default:
+            *strMonth = "ERROR";
+            break;
+    }
+    
+    return strMonth;
+}
+
+StructWeatherResults *calculateResults(StructMonthWeather *stcArr, const int INT_MONTHS)
 {
     StructWeatherResults *stcResults = nullptr;
     stcResults = new StructWeatherResults;
+    
+    EnmMonth *enmMonths = nullptr;
+    enmMonths = new EnmMonth;
     
     double *dblAverageRainfall = nullptr;
     dblAverageRainfall = new double;
@@ -115,15 +172,15 @@ StructWeatherResults *calculateResults(StructMonthWeather *stcArr, const int INT
     dblTotalRainfall = new double;
     *dblTotalRainfall = 0;
     
-    int *intHighestMonth = nullptr;
-    intHighestMonth = new int;
+    string *strHighestMonth = nullptr;
+    strHighestMonth = new string;
     
     double *dblHighestTemp = nullptr;
     dblHighestTemp = new double;
     *dblHighestTemp = __DBL_MIN__;
     
-    int *intLowestMonth = nullptr;
-    intLowestMonth = new int;
+    string *strLowestMonth = nullptr;
+    strLowestMonth = new string;
     
     double *dblLowestTemp = nullptr;
     dblLowestTemp = new double;
@@ -133,58 +190,58 @@ StructWeatherResults *calculateResults(StructMonthWeather *stcArr, const int INT
     dblAverageTemp = new double;
     *dblAverageTemp = 0;
     
-    for (int i = 0 ; i < INT_SIZE ; i++)
+    for (int month = JANUARY ; month <= DECEMBER ; month++)
     {
-        *dblTotalRainfall += stcArr[i].dblRainfallTotal;
+        *dblTotalRainfall += stcArr[month].dblRainfallTotal;
     }
     stcResults->dblTotalRainfallAnnual = *dblTotalRainfall;
     
-    *dblAverageRainfall = *dblTotalRainfall / INT_SIZE;
+    *dblAverageRainfall = *dblTotalRainfall / INT_MONTHS;
     stcResults->dblAverageMonthlyRainfall = *dblAverageRainfall;
     
-    for (int i = 0 ; i < INT_SIZE ; i++)
+    for (int month = JANUARY ; month <= DECEMBER ; month++)
     {
-        *dblAverageTemp += stcArr[i].dblTempAverage;
+        *dblAverageTemp += stcArr[month].dblTempAverage;
         
-        if (stcArr[i].dblTempHigh > *dblHighestTemp)
+        if (stcArr[month].dblTempHigh > *dblHighestTemp)
         {
-            *dblHighestTemp = stcArr[i].dblTempHigh;
-            *intHighestMonth = i + 1;
+            *dblHighestTemp = stcArr[month].dblTempHigh;
+            *strHighestMonth = *convertEnumToString(month);
         }
         
-        if (stcArr[i].dblTempLow < *dblLowestTemp)
+        if (stcArr[month].dblTempLow < *dblLowestTemp)
         {
-            *dblLowestTemp = stcArr[i].dblTempLow;
-            *intLowestMonth = i + 1;
+            *dblLowestTemp = stcArr[month].dblTempLow;
+            *strLowestMonth = *convertEnumToString(month);
         }
     }
     
     stcResults->dblTempHighest = *dblHighestTemp;
-    stcResults->intMonthHigh = *intHighestMonth;
+    stcResults->strMonthHigh = *strHighestMonth;
     
     stcResults->dblTempLowest = *dblLowestTemp;
-    stcResults->intMonthLow = *intLowestMonth;
+    stcResults->strMonthLow = *strLowestMonth;
     
-    stcResults->dblAverageMonthlyTemp = *dblAverageTemp / INT_SIZE;
+    stcResults->dblAverageMonthlyTemp = *dblAverageTemp / INT_MONTHS;
     
     return stcResults;
 }
 
-void displayResults(StructWeatherResults *stcResults, const int INT_SIZE)
+void displayResults(StructWeatherResults *stcResults)
 {
-    cout << fixed << showpoint << setprecision(1);
+    cout << fixed << showpoint << setprecision(1) << endl;
     
     cout << "The average monthly rainfall was: " << stcResults->dblAverageMonthlyRainfall << endl;
     
     cout << "The total annual rainfall was: " << stcResults->dblTotalRainfallAnnual << endl;
     
-    cout << "The highest temperature of the year was in month ";
-    cout << stcResults->intMonthHigh << ": " << stcResults->dblTempHighest << "F\n";
+    cout << "The highest temperature of the year was in ";
+    cout << stcResults->strMonthHigh << ": " << stcResults->dblTempHighest << "F\n";
     
-    cout << "The lowest temperature of the year was in month ";
-    cout << stcResults->intMonthLow << ": " << stcResults->dblTempLowest << "F\n";
+    cout << "The lowest temperature of the year was in ";
+    cout << stcResults->strMonthLow << ": " << stcResults->dblTempLowest << "F\n";
     
     cout << "The average monthly temperature was: ";
-    cout << stcResults->dblAverageMonthlyTemp << "F\n";
+    cout << stcResults->dblAverageMonthlyTemp << "F\n\n";
 }
 
